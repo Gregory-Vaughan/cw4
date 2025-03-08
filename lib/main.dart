@@ -54,16 +54,52 @@ class _PlanManagerScreenState extends State<PlanManagerScreen> {
               itemBuilder: (context, index) {
                 final plan = plans[index];
 
-                return GestureDetector(
-                  onDoubleTap: () => _deletePlan(index), 
-                  child: ListTile(
-                    title: Text(plan.name),
-                    subtitle: Text(plan.description),
-                    trailing: Icon(
-                      plan.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                      color: plan.isCompleted ? Colors.green : Colors.grey,
+                return Dismissible(
+                  key: Key(plan.name),
+                  background: Container(
+                    color: Colors.green,
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: const Icon(Icons.check, color: Colors.white, size: 30),
+                  ),
+                  secondaryBackground: Container(
+                    color: Colors.red,
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: const Icon(Icons.undo, color: Colors.white, size: 30),
+                  ),
+                  onDismissed: (direction) {
+                    setState(() {
+                      if (direction == DismissDirection.startToEnd) {
+                        plans[index].isCompleted = true;
+                      } else {
+                        plans[index].isCompleted = false;
+                      }
+                    });
+                  },
+                  child: GestureDetector(
+                    onDoubleTap: () => _deletePlan(index), 
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: plan.isCompleted ? Colors.green.shade100 : Colors.blue.shade100,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                      child: ListTile(
+                        title: Text(
+                          plan.name,
+                          style: TextStyle(
+                            decoration: plan.isCompleted ? TextDecoration.lineThrough : null,
+                          ),
+                        ),
+                        subtitle: Text(plan.description),
+                        trailing: Icon(
+                          plan.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                          color: plan.isCompleted ? Colors.green : Colors.grey,
+                        ),
+                        onLongPress: () => _editPlan(index),
+                      ),
                     ),
-                    onLongPress: () => _editPlan(index), 
                   ),
                 );
               },
@@ -75,7 +111,7 @@ class _PlanManagerScreenState extends State<PlanManagerScreen> {
     );
   }
 
-
+  
   void _showCreatePlanDialog() {
     String name = '';
     String description = '';
@@ -133,7 +169,7 @@ class _PlanManagerScreenState extends State<PlanManagerScreen> {
     );
   }
 
-  
+ 
   void _editPlan(int index) {
     String updatedName = plans[index].name;
     String updatedDescription = plans[index].description;
