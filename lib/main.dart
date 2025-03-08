@@ -49,9 +49,17 @@ class _PlanManagerScreenState extends State<PlanManagerScreen> {
       appBar: AppBar(title: const Text('Adoption & Travel Planner')),
       body: plans.isEmpty
           ? const Center(child: Text('No plans yet. Tap + to add a plan!'))
-          : ListView.builder(
-              itemCount: plans.length,
-              itemBuilder: (context, index) {
+          : ReorderableListView(
+              onReorder: (oldIndex, newIndex) {
+                setState(() {
+                  if (newIndex > oldIndex) {
+                    newIndex -= 1;
+                  }
+                  final Plan movedPlan = plans.removeAt(oldIndex);
+                  plans.insert(newIndex, movedPlan);
+                });
+              },
+              children: List.generate(plans.length, (index) {
                 final plan = plans[index];
 
                 return Dismissible(
@@ -78,7 +86,8 @@ class _PlanManagerScreenState extends State<PlanManagerScreen> {
                     });
                   },
                   child: GestureDetector(
-                    onDoubleTap: () => _deletePlan(index), 
+                    onDoubleTap: () => _deletePlan(index),
+                    key: ValueKey(plan), 
                     child: Container(
                       decoration: BoxDecoration(
                         color: plan.isCompleted ? Colors.green.shade100 : Colors.blue.shade100,
@@ -93,16 +102,13 @@ class _PlanManagerScreenState extends State<PlanManagerScreen> {
                           ),
                         ),
                         subtitle: Text(plan.description),
-                        trailing: Icon(
-                          plan.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                          color: plan.isCompleted ? Colors.green : Colors.grey,
-                        ),
+                        trailing: const Icon(Icons.drag_handle), 
                         onLongPress: () => _editPlan(index),
                       ),
                     ),
                   ),
                 );
-              },
+              }),
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showCreatePlanDialog,
@@ -111,7 +117,7 @@ class _PlanManagerScreenState extends State<PlanManagerScreen> {
     );
   }
 
-  
+  // Show Create Plan Dialog
   void _showCreatePlanDialog() {
     String name = '';
     String description = '';
@@ -169,7 +175,7 @@ class _PlanManagerScreenState extends State<PlanManagerScreen> {
     );
   }
 
- 
+  
   void _editPlan(int index) {
     String updatedName = plans[index].name;
     String updatedDescription = plans[index].description;
